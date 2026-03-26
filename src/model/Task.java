@@ -1,7 +1,5 @@
 package model;
 
-import java.util.Objects;
-
 public class Task {
 
     private int id;
@@ -38,7 +36,6 @@ public class Task {
         return updatedAt;
     }
 
-//    not scalable
     public static Task fromJson(String jsonString){
             String task = jsonString.replace("{", "").replace("}", "").replace("\"", "");
             String[] taskDetails = task.split(",");
@@ -51,7 +48,6 @@ public class Task {
             return new Task(createdAt, description, id, status, updatedAt);
     }
 
-//    not scalable
     public  String serializeToJsonString() {
         return "{" +
                     "\"id\":\"" + id + "\"," +

@@ -1,5 +1,6 @@
 package repository;
 
+import exceptions.TaskNotFoundException;
 import helpers.FileManager;
 import helpers.JsonMapper;
 import model.Task;
@@ -15,6 +16,7 @@ public class TaskRepository {
         this.fileManager = fileManager;
     }
 
+    // TODO: dont load the file everytime, add a cache
     public ArrayList<Task> loadJson(){
         String json = fileManager.readFile();
         return JsonMapper.stringToTask(json);
@@ -31,21 +33,40 @@ public class TaskRepository {
         saveJson(tasks);
     }
 
-    public void updateTask(int id, Consumer<Task> updater){
-        ArrayList<Task> tasks = loadJson();
-        for(Task task: tasks){
-            if(task.getId() == id){
-                updater.accept(task);
-                task.setUpdatedAt(System.currentTimeMillis());
-                break;
+    public int getTaskIndexById(int id, ArrayList<Task> tasks){
+        for(int i=0;i<tasks.size();i++){
+            if(tasks.get(i).getId() == id){
+                return i;
             }
         }
+
+        return -1;
+    }
+    public void updateTask(int id, Consumer<Task> updater){
+        ArrayList<Task> tasks = loadJson();
+        int taskIndex = getTaskIndexById(id, tasks);
+
+        if(taskIndex == -1){
+            throw new TaskNotFoundException();
+        }
+
+        Task task = tasks.get(taskIndex);
+        updater.accept(task);
+        task.setUpdatedAt(System.currentTimeMillis());
+
         saveJson(tasks);
     }
 
     public void deleteTask(int id){
         ArrayList<Task> tasks = loadJson();
-        tasks.removeIf(task -> task.getId() == id);
+
+        int taskIndex = getTaskIndexById(id, tasks);
+
+        if(taskIndex == -1){
+            throw new TaskNotFoundException();
+        }
+
+        tasks.remove(taskIndex);
         saveJson(tasks);
     }
 

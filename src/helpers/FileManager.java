@@ -1,5 +1,7 @@
 package helpers;
 
+import exceptions.FileOperationException;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,7 +21,7 @@ public class FileManager {
         try{
             Files.createFile(filePath);
         } catch(IOException e){
-            System.out.println(e.getMessage());
+            throw new FileOperationException("Failed to create file: " + filePath.toString(), e);
         }
     }
 
@@ -35,8 +37,7 @@ public class FileManager {
             }
             return fileContents.toString();
         } catch (IOException e) {
-            System.out.println(e.getMessage());
-            return "";
+            throw new FileOperationException("Failed to read file: " + filePath.toString(), e);
         }
     }
 
@@ -44,7 +45,7 @@ public class FileManager {
         try(BufferedWriter writer = new BufferedWriter(new FileWriter(filePath.toFile()))){
             writer.write(fileContents);
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            throw new FileOperationException("Failed to write to file: " + filePath.toString(), e);
         }
     }
 }
