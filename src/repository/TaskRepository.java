@@ -42,24 +42,26 @@ public class TaskRepository {
 
         return -1;
     }
-    public void updateTask(int id, Consumer<Task> updater){
-        ArrayList<Task> tasks = loadJson();
-        int taskIndex = getTaskIndexById(id, tasks);
 
-        if(taskIndex == -1){
+    public Task getTaskById(int id, ArrayList<Task> tasks){
+        int idx = getTaskIndexById(id, tasks);
+        if(idx == -1){
             throw new TaskNotFoundException();
         }
 
-        Task task = tasks.get(taskIndex);
+        return tasks.get(idx);
+    }
+
+    public void updateTask(int id, Consumer<Task> updater){
+        ArrayList<Task> tasks = loadJson();
+        Task task = getTaskById(id, tasks);
         updater.accept(task);
         task.setUpdatedAt(System.currentTimeMillis());
-
         saveJson(tasks);
     }
 
     public void deleteTask(int id){
         ArrayList<Task> tasks = loadJson();
-
         int taskIndex = getTaskIndexById(id, tasks);
 
         if(taskIndex == -1){

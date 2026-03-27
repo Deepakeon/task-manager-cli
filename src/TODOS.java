@@ -1,7 +1,4 @@
 public class TODOS{
-//    TODO: Validate task descriptions (not null, not empty, reasonable length)
-//    TODO: Validate task IDs (positive integers, exists in repository)
-//    TODO: Validate status transitions (prevent invalid state changes)
 
 //    JSONMapper
 //    TODO: Add try-catch blocks for JSON parsing operations
