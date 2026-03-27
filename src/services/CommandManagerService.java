@@ -1,12 +1,12 @@
 package services;
 
-import exceptions.FileOperationException;
 import exceptions.InvalidCommandException;
-import exceptions.TaskNotFoundException;
 import model.Task;
 import model.TaskStatus;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 
 public class CommandManagerService {
     private final TaskService taskService;
@@ -15,45 +15,57 @@ public class CommandManagerService {
         this.taskService = taskService;
     }
 
+    private HashMap<String, String> getCommandAttributesMap(String[] args){
+        HashMap<String, String> commandsMap = new HashMap<>();
+        for(int i=0;i< args.length -1;i+=2){
+            commandsMap.put(args[i],args[i+1]);
+        }
+
+        return commandsMap;
+    }
+
     public void init(String[] args){
         String operation = args[0].toLowerCase();
+        HashMap<String, String> commandAttributesMap = getCommandAttributesMap(Arrays.copyOfRange(args, 1, args.length));
 
         try {
 
             switch (operation) {
-                case "add":
-                    if (args.length != 2) {
-                        throw new InvalidCommandException("Add");
-                    }
-                    taskService.addTask(args[1]);
-                    break;
-                case "update":
-                    if (args.length != 3) {
-                        throw new InvalidCommandException("Update");
-                    }
-                    taskService.updateTask(Integer.parseInt(args[1]), args[2]);
-                    break;
-                case "delete":
-                    if (args.length != 2) {
-                        throw new InvalidCommandException("Delete");
-                    }
-                    taskService.deleteTask(Integer.parseInt(args[1]));
-                    break;
-                case "mark-in-progress":
-                    if (args.length != 2) {
-                        throw new InvalidCommandException("Mark in progress");
-                    }
-                    taskService.updateTask(Integer.parseInt(args[1]), TaskStatus.IN_PROGRESS);
-                    break;
-                case "mark-done":
-                    if (args.length != 2) {
-                        throw new InvalidCommandException("Mark done");
-                    }
-                    taskService.updateTask(Integer.parseInt(args[1]), TaskStatus.DONE);
-                    break;
-                case "list":
-                    ArrayList<Task> tasks = new ArrayList<>();
+                case "add" -> {
+                    String description = commandAttributesMap.get("--description");
 
+                    if(description == null){
+                        throw new InvalidCommandException(operation);
+                    }
+
+                    taskService.addTask(description);
+                }
+                case "update" -> {
+                    int id = Integer.parseInt(commandAttributesMap.get("--id"));
+                    String description = commandAttributesMap.get("--description");
+
+                    if (description == null){
+                        throw new InvalidCommandException(operation);
+                    }
+
+                    taskService.updateTask(id, description.trim());
+                }
+                case "delete" -> {
+                    int id = Integer.parseInt(commandAttributesMap.get("--id"));
+                    taskService.deleteTask(id);
+                }
+                case "mark-in-progress" -> {
+                    int id = Integer.parseInt(commandAttributesMap.get("--id"));
+                    taskService.updateTask(id, TaskStatus.IN_PROGRESS);
+
+                }
+                case "mark-done" -> {
+                    int id = Integer.parseInt(commandAttributesMap.get("--id"));
+                    taskService.updateTask(id, TaskStatus.DONE);
+
+                }
+                case "list" -> {
+                    ArrayList<Task> tasks;
                     if (args.length == 2) {
                         TaskStatus status = TaskStatus.NOT_STARTED;
                         if (args[1].equals("done")) {
@@ -69,12 +81,13 @@ public class CommandManagerService {
                     for (Task task : tasks) {
                         System.out.println(task.serializeToJsonString());
                     }
-                    break;
-                default:
+                }
+                default -> {
                     System.out.println("Command not found");
+                }
 
             }
-        }catch (FileOperationException | TaskNotFoundException | InvalidCommandException e){
+        }catch (Exception e){
             System.out.println(e.getMessage());
         }
     }

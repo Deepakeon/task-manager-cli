@@ -1,11 +1,4 @@
 public class TODOS{
-//    TODO: implement Custom exception classes like task not found, invalid command, file operation
-//    TODO: write proper error messages instead of system.out.println
-
-//    TODO: validate command arguments in commandmanagerservice
-//    TODO: add null checks and empty string validations
-//    TODO: provide specific message for each error
-
 //    TODO: Validate task descriptions (not null, not empty, reasonable length)
 //    TODO: Validate task IDs (positive integers, exists in repository)
 //    TODO: Validate status transitions (prevent invalid state changes)
