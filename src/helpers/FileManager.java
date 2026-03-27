@@ -5,30 +5,37 @@ import exceptions.FileOperationException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 public class FileManager {
     final private Path filePath;
+    final private Path tempPath;
 
     public FileManager(String filePath){
         this.filePath = Path.of(filePath);
+        this.tempPath = Path.of(filePath + ".tmp");
     }
 
-    public boolean doesFileExists(){
-        return Files.exists(filePath);
+    public boolean doesFileNotExist(Path filePath){
+        return !Files.exists(filePath);
     }
 
-    public void createFile(){
+    public void createFilesIfNotExist(){
         try{
-            Files.createFile(filePath);
+            if(doesFileNotExist(filePath)){
+                Files.createFile(filePath);
+            }
+
+            if(doesFileNotExist(tempPath)){
+                Files.createFile(tempPath);
+            }
         } catch(IOException e){
-            throw new FileOperationException("Failed to create file: " + filePath.toString(), e);
+            throw new FileOperationException("Failed to create file: " + e.getMessage(), e);
         }
     }
 
     public String readFile(){
-        if (!doesFileExists()){
-            createFile();
-        }
+        createFilesIfNotExist();
         try(BufferedReader reader = new BufferedReader(new FileReader(filePath.toFile()))){
             StringBuilder fileContents = new StringBuilder();
             String content;
@@ -37,15 +44,25 @@ public class FileManager {
             }
             return fileContents.toString();
         } catch (IOException e) {
-            throw new FileOperationException("Failed to read file: " + filePath.toString(), e);
+            throw new FileOperationException("Failed to read file: " + filePath, e);
         }
     }
 
-    public void writeFile(String fileContents){
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(filePath.toFile()))){
-            writer.write(fileContents);
+    public void completeAtomicWrite(){
+        try{
+            Files.move(tempPath, filePath, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
+            throw new FileOperationException("Failed to write atomically" + e.getMessage(), e);
+        }
+    }
+
+    public void atomicWriteFile(String fileContents){
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(tempPath.toFile()))){
+            writer.write(fileContents);
+            writer.flush();
+        }catch (IOException e) {
             throw new FileOperationException("Failed to write to file: " + filePath.toString(), e);
         }
+        completeAtomicWrite();
     }
 }

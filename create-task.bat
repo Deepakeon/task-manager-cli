@@ -31,4 +31,4 @@ REM java -cp out TaskCli mark-done 1
 
 echo.
 echo Command: java -cp out TaskCli list done
-java -cp out TaskCli add --description
+java -cp out TaskCli add --description "Deepak"

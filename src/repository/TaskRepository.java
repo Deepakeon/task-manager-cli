@@ -24,7 +24,7 @@ public class TaskRepository {
 
     public void saveJson(ArrayList<Task> tasks){
         String updatedJson = JsonMapper.taskToString(tasks);
-        fileManager.writeFile(updatedJson);
+        fileManager.atomicWriteFile(updatedJson);
     }
 
     public void addTask(Task task){
