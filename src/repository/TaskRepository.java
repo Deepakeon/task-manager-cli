@@ -10,16 +10,27 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class TaskRepository {
-    final public FileManager fileManager;
+    final private FileManager fileManager;
+    private ArrayList<Task> tasks = new ArrayList<>();
 
     public TaskRepository(FileManager fileManager) {
         this.fileManager = fileManager;
     }
 
-    // TODO: dont load the file everytime, add a cache
-    public ArrayList<Task> loadJson(){
-        String json = fileManager.readFile();
-        return JsonMapper.stringToTask(json);
+    public ArrayList<Task> getTasks(){
+        if(tasks.isEmpty()){
+            String json = fileManager.readFile();
+            tasks = JsonMapper.stringToTask(json);
+        }
+        return tasks;
+    }
+
+    public ArrayList<Task> getTasks(TaskStatus status){
+        if(tasks.isEmpty()){
+            String json = fileManager.readFile();
+            tasks = JsonMapper.stringToTask(json);
+        }
+        return new ArrayList<>(tasks.stream().filter(task -> task.getStatus() == status).toList());
     }
 
     public void saveJson(ArrayList<Task> tasks){
@@ -28,7 +39,7 @@ public class TaskRepository {
     }
 
     public void addTask(Task task){
-        ArrayList<Task> tasks = loadJson();
+        ArrayList<Task> tasks = getTasks();
         tasks.add(task);
         saveJson(tasks);
     }
@@ -53,7 +64,7 @@ public class TaskRepository {
     }
 
     public void updateTask(int id, Consumer<Task> updater){
-        ArrayList<Task> tasks = loadJson();
+        ArrayList<Task> tasks = getTasks();
         Task task = getTaskById(id, tasks);
         updater.accept(task);
         task.setUpdatedAt(System.currentTimeMillis());
@@ -61,7 +72,7 @@ public class TaskRepository {
     }
 
     public void deleteTask(int id){
-        ArrayList<Task> tasks = loadJson();
+        ArrayList<Task> tasks = getTasks();
         int taskIndex = getTaskIndexById(id, tasks);
 
         if(taskIndex == -1){
@@ -70,14 +81,5 @@ public class TaskRepository {
 
         tasks.remove(taskIndex);
         saveJson(tasks);
-    }
-
-    public ArrayList<Task> getTasks(){
-        return loadJson();
-    }
-
-    public ArrayList<Task> getTasks(TaskStatus status){
-        ArrayList<Task> tasks = loadJson();
-        return new ArrayList<>(tasks.stream().filter(task -> task.getStatus() == status).toList());
     }
 }
